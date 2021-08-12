@@ -1,17 +1,14 @@
-# syntax=docker/dockerfile:1
+FROM gradle:4.7.0-jdk8-alpine AS build
+COPY --chown=gradle:gradle . /home/gradle/src
+WORKDIR /home/gradle/src
+RUN gradle build --no-daemon 
 
-FROM openjdk:16-alpine3.13
+FROM openjdk:8-jre-slim
 
-WORKDIR /sample-app
+EXPOSE 8080
 
-COPY .mvn/ .mvn
-COPY mvnw pom.xml ./
-RUN ./mvnw dependency:go-offline
+RUN mkdir /app
 
-FROM docker
-COPY --from=docker/buildx-bin /buildx /usr/libexec/docker/cli-plugins/docker-buildx
-RUN docker buildx version
+COPY --from=build /home/gradle/src/build/libs/*.jar /app/spring-boot-application.jar
 
-COPY src ./src
-
-CMD ["./mvnw", "spring-boot:run"]
+ENTRYPOINT ["java", "-XX:+UnlockExperimentalVMOptions", "-XX:+UseCGroupMemoryLimitForHeap", "-Djava.security.egd=file:/dev/./urandom","-jar","/app/spring-boot-application.jar"]
