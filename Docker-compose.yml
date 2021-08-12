@@ -1,0 +1,41 @@
+version: "3.3"
+services:
+  app:
+    build:
+      args:
+        user: chidi
+        uid: 1000
+      context: ./
+      dockerfile: Dockerfile
+    image: trialproject
+    container_name: trialproject-app
+    restart: unless-stopped
+    working_dir: /var/www/
+    volumes:
+      - ./:/var/www
+    networks:
+      - trialproject
+      
+  nginx:
+    image: nginx:alpine
+    container_name: trialproject-nginx
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - trialproject
+
+  redis:
+    image: redis:4.0
+    container_name: app_redis
+    ports:
+    - "6382:6379"
+    networks:
+    - trialproject
+
+networks:
+  trialproject:
+    driver: bridge
