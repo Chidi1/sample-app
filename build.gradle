@@ -2,6 +2,7 @@ plugins {
     id 'org.springframework.boot' version '2.4.3'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
     id 'java'
+    id 'com.palantir.docker' version '0.22.1'
 }
 
 group 'com.tutuka'
@@ -9,6 +10,13 @@ version '0.0.1'
 
 repositories {
     mavenCentral()
+}
+
+docker {
+    name "trialproject"
+    dockerfile file ('./Dockerfile')
+    copySpec.from(jar).rename(".*","app.jar")
+    buildArgs(['JAR_FILE': "app.jar"])
 }
 
 dependencies {
